@@ -16,11 +16,20 @@ jobs:
     - name: Compile Tweak.x to object file (.o)
       run: |
         mkdir build
-        clang -c "Photoshop Express/Tweak.x" -o build/Tweak.o \
+        clang -c "Photoshop\ Express/Tweak.x" -o build/Tweak.o \
           -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path)
+
+        # Check if the object file was created
+        ls build
 
     - name: Link object file to create .dylib
       run: |
+        # Check if the object file exists before linking
+        if [ ! -f build/Tweak.o ]; then
+          echo "Error: Object file not found!"
+          exit 1
+        fi
+
         clang -dynamiclib -o build/Tweak.dylib build/Tweak.o \
           -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path)
 
