@@ -33,6 +33,19 @@ jobs:
         mkdir -p $GITHUB_WORKSPACE/tweak
         cp "Photoshop Express/Tweak.x" $GITHUB_WORKSPACE/tweak/
         
+    - name: Create control file
+      run: |
+        cat << EOF > $GITHUB_WORKSPACE/tweak/control
+        Package: com.yourusername.photoshopexpresstweak
+        Name: PhotoshopExpressTweak
+        Version: 1.0.0
+        Architecture: iphoneos-arm
+        Description: A tweak for Photoshop Express
+        Maintainer: Your Name
+        Author: Your Name
+        Section: Tweaks
+        EOF
+        
     - name: Create Filter.plist
       run: |
         cat << EOF > $GITHUB_WORKSPACE/tweak/PhotoshopExpressTweak.plist
@@ -64,4 +77,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: PhotoshopExpressTweak
-        path: ${{ github.workspace }}/tweak/.theos/obj/debug/PhotoshopExpressTweak.dylib
+        path: |
+          ${{ github.workspace }}/tweak/.theos/obj/debug/PhotoshopExpressTweak.dylib
+          ${{ github.workspace }}/tweak/packages/*.deb
