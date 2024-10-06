@@ -16,7 +16,7 @@ jobs:
     - name: Compile Tweak.x to object file (.o)
       run: |
         mkdir build
-        clang -c "Photoshop\ Express/Tweak.x" -o build/Tweak.o \
+        clang -c "Photoshop Express/Tweak.x" -o build/Tweak.o \
           -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path)
 
     - name: Link object file to create .dylib
