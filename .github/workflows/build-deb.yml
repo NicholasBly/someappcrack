@@ -13,18 +13,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: List Files in Directory
+      run: |
+        ls -al "Photoshop Express"
+
     - name: Compile Tweak.x to object file (.o)
       run: |
         mkdir build
-        clang -c "Photoshop\ Express/Tweak.x" -o build/Tweak.o \
+        TWEAK_PATH="Photoshop Express/Tweak.x"
+        clang -c "$TWEAK_PATH" -o build/Tweak.o \
           -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path)
-
-        # Check if the object file was created
-        ls build
 
     - name: Link object file to create .dylib
       run: |
-        # Check if the object file exists before linking
         if [ ! -f build/Tweak.o ]; then
           echo "Error: Object file not found!"
           exit 1
@@ -41,10 +42,8 @@ jobs:
         mkdir -p deb-package/DEBIAN
         mkdir -p deb-package/Library
 
-        # Move the .dylib to the appropriate folder
         mv build/Tweak.dylib deb-package/Library/
 
-        # Create the control file for the package
         echo "Package: com.yourname.tweak" > deb-package/DEBIAN/control
         echo "Name: Photoshop Express Tweak" >> deb-package/DEBIAN/control
         echo "Version: 1.0" >> deb-package/DEBIAN/control
