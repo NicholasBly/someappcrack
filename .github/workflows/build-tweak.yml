@@ -33,6 +33,12 @@ jobs:
         mkdir -p $GITHUB_WORKSPACE/tweak
         cp "Photoshop Express/Tweak.x" $GITHUB_WORKSPACE/tweak/
         
+    - name: Create Filter.plist
+      run: |
+        cat << EOF > $GITHUB_WORKSPACE/tweak/PhotoshopExpressTweak.plist
+        { Filter = { Bundles = ( "com.adobe.PSMobile" ); }; }
+        EOF
+        
     - name: Create Makefile
       run: |
         cat << EOF > $GITHUB_WORKSPACE/tweak/Makefile
