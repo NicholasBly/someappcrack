@@ -1,0 +1,61 @@
+name: Build Theos Tweak
+
+on:
+  push:
+    paths:
+      - 'Photoshop Express/Tweak.x'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Install Dependencies
+      run: |
+        brew install ldid xz
+        git clone --recursive https://github.com/theos/theos.git $GITHUB_WORKSPACE/theos
+        
+    - name: Set up Theos environment
+      run: |
+        echo "THEOS=$GITHUB_WORKSPACE/theos" >> $GITHUB_ENV
+        echo "PATH=$GITHUB_WORKSPACE/theos/bin:$PATH" >> $GITHUB_ENV
+        
+    - name: Install iOS SDKs
+      run: |
+        git clone https://github.com/xybp888/iOS-SDKs.git $GITHUB_WORKSPACE/sdks
+        mv $GITHUB_WORKSPACE/sdks/*.sdk $GITHUB_WORKSPACE/theos/sdks/
+        
+    - name: Create Theos project structure
+      run: |
+        mkdir -p $GITHUB_WORKSPACE/tweak
+        cp "Photoshop Express/Tweak.x" $GITHUB_WORKSPACE/tweak/
+        
+    - name: Create Makefile
+      run: |
+        cat << EOF > $GITHUB_WORKSPACE/tweak/Makefile
+        ARCHS = arm64 arm64e
+        TARGET = iphone:clang:latest:14.0
+        
+        include \$(THEOS)/makefiles/common.mk
+        
+        TWEAK_NAME = PhotoshopExpressTweak
+        
+        PhotoshopExpressTweak_FILES = Tweak.x
+        PhotoshopExpressTweak_CFLAGS = -fobjc-arc
+        
+        include \$(THEOS_MAKE_PATH)/tweak.mk
+        EOF
+        
+    - name: Build tweak
+      run: |
+        cd $GITHUB_WORKSPACE/tweak
+        make package
+        
+    - name: Upload .dylib artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PhotoshopExpressTweak
+        path: ${{ github.workspace }}/tweak/.theos/obj/debug/PhotoshopExpressTweak.dylib
