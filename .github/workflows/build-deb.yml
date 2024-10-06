@@ -1,0 +1,51 @@
+name: Build and Package Photoshop Express Tweak
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Compile Tweak.x to .dylib
+      run: |
+        mkdir build
+        clang -dynamiclib -o build/Tweak.dylib "Photoshop Express/Tweak.x" \
+          -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path)
+        
+        # Optional: Code signing the .dylib
+        codesign -fs "Apple Development: YourName" build/Tweak.dylib
+
+    - name: Create .deb package structure
+      run: |
+        mkdir -p deb-package/DEBIAN
+        mkdir -p deb-package/Library
+
+        # Move the .dylib to the appropriate folder
+        mv build/Tweak.dylib deb-package/Library/
+
+        # Create the control file for the package
+        echo "Package: com.yourname.tweak" > deb-package/DEBIAN/control
+        echo "Name: Photoshop Express Tweak" >> deb-package/DEBIAN/control
+        echo "Version: 1.0" >> deb-package/DEBIAN/control
+        echo "Architecture: iphoneos-arm" >> deb-package/DEBIAN/control
+        echo "Description: Photoshop Express tweak package" >> deb-package/DEBIAN/control
+        echo "Author: Your Name <your.email@example.com>" >> deb-package/DEBIAN/control
+        echo "Maintainer: Your Name <your.email@example.com>" >> deb-package/DEBIAN/control
+        echo "Section: Tweaks" >> deb-package/DEBIAN/control
+
+    - name: Build .deb package
+      run: |
+        dpkg-deb --build deb-package
+
+    - name: Upload .deb package as an artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: photoshop-express-tweak-deb
+        path: deb-package.deb
