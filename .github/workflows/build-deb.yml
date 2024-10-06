@@ -13,12 +13,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Compile Tweak.x to .dylib
+    - name: Compile Tweak.x to object file (.o)
       run: |
         mkdir build
-        clang -dynamiclib -o build/Tweak.dylib "Photoshop Express/Tweak.x" \
+        clang -c "Photoshop Express/Tweak.x" -o build/Tweak.o \
           -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path)
-        
+
+    - name: Link object file to create .dylib
+      run: |
+        clang -dynamiclib -o build/Tweak.dylib build/Tweak.o \
+          -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path)
+
         # Optional: Code signing the .dylib
         codesign -fs "Apple Development: YourName" build/Tweak.dylib
 
